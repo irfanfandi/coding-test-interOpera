@@ -1,74 +1,69 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import SalesDashboard from "../components/SalesDashboard";
+import AIAsistant from "../components/AIAsistant";
+import { getDataSales } from "../services/Api";
+import { getFirstWord } from "../utils/function";
 
 export default function Home() {
   const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState({});
   const [loading, setLoading] = useState(true);
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/data")
-      .then((res) => res.json())
-      .then((data) => {
-        setUsers(data.users || []);
+    const fetchSalesReps = async () => {
+      try {
+        const data = await getDataSales();
+
+        setUsers(data.salesReps);
+        if (data.salesReps.length > 0) {
+          setSelectedUser(data.salesReps[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sales representatives:", error.message);
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch data:", err);
-        setLoading(false);
-      });
+      }
+    };
+
+    fetchSalesReps();
   }, []);
 
-  const handleAskQuestion = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/api/ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
-      const data = await response.json();
-      setAnswer(data.answer);
-    } catch (error) {
-      console.error("Error in AI request:", error);
-    }
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-200 border-t-orange-700"></div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Next.js + FastAPI Sample</h1>
-
-      <section style={{ marginBottom: "2rem" }}>
-        <h2>Dummy Data</h2>
-        {loading ? (
-          <p>Loading...</p>
-        ) : (
-          <ul>
-            {users.map((user) => (
-              <li key={user.id}>
-                {user.name} - {user.role}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
+    <div className="p-4 md:p-8 lg:p-12 grid gap-4 md:gap-6">
+      <Suspense fallback={<div>Loading</div>}>
+        <AIAsistant />
+      </Suspense>
       <section>
-        <h2>Ask a Question (AI Endpoint)</h2>
-        <div>
-          <input
-            type="text"
-            placeholder="Enter your question..."
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
-          <button onClick={handleAskQuestion}>Ask</button>
-        </div>
-        {answer && (
-          <div style={{ marginTop: "1rem" }}>
-            <strong>AI Response:</strong> {answer}
-          </div>
-        )}
+        <ul className="flex gap-4 mt-4">
+          {users.map((user) => (
+            <li
+              className={`cursor-pointer shadow p-2 px-4 rounded-2xl hover:bg-gray-100 ${
+                selectedUser?.id == user.id ? "bg-gray-100" : "bg-white"
+              }`}
+              key={user.id}
+              onClick={() => {
+                setSelectedUser(user);
+              }}
+            >
+              <span className="text-xl"> {user.name}</span>
+              <br />
+              <div className="text-sm">{getFirstWord(user.role)}</div>
+            </li>
+          ))}
+        </ul>
       </section>
+
+      <Suspense fallback={<div>Loading</div>}>
+        <SalesDashboard selectedUser={selectedUser} />
+      </Suspense>
     </div>
   );
 }
