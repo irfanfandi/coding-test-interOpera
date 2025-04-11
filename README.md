@@ -31,11 +31,29 @@
 ---
 
 ## Overview
-Your task is to build a simple, full-stack application featuring:
-1. **Next.js** as the frontend framework.
-2. **FastAPI** as the backend API layer.
-3. **Dummy JSON Data** (provided) with sales-related information.
+### Brief Explanation of Design Choices
 
-You will parse the provided **`dummyData.json`** and render its nested structures in a user-friendly interface. Optionally, you may include a simple AI feature as a bonus.
+1. User-Centric Focus:
+The dashboard prominently highlights individual users (e.g., Alice), helping team members focus on their performance and data. This improves personalization and task clarity.
 
+2. Clean, Minimal UI:
+The interface uses a soft color palette and ample white space, which enhances readability and reduces cognitive load. Tags like “CRM” and “Negotiation” are styled as pill buttons, offering quick context.
+
+3. Data Visualization:
+A donut chart is used for "Deals by Status," which quickly conveys distribution of deal stages (Closed Won, In Progress, Closed Lost) with clear color-coding and dollar values.
+
+4. Component-Based Layout:
+The interface is split into modular sections—profile, deals, clients, and analytics—allowing users to easily scan and find information.
+
+5. Interactive Navigation:
+Horizontal scrolling chips at the top (with team members’ names) offer easy context switching. This allows for quick browsing across sales team data.
+
+### Potential Improvements
+
+Interaction Cues:
+1. Add hover or click effects to interactive elements like deals and user chips to reinforce interactivity.
+2. Consider a “View All Deals” or “More Info” link/button to allow deeper navigation into deal details.
+
+Filtering & Search Enhancement:
+1. The search bar is prominent, but a filter dropdown for “Deal Status” or “Client Type” near the deals list could improve data interaction.
 ---
