@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 import { postAI } from "../services/Api";
 
 const AIAsistant = () => {
@@ -6,18 +6,15 @@ const AIAsistant = () => {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  const handleAskQuestion = async () => {
-    // Don't process empty questions
-    if (!question.trim()) {
-      return;
-    }
-    setLoading(true);
+  const handleAskQuestion = useCallback(async () => {
+    if (!question.trim()) return;
 
+    setLoading(true);
     try {
       const { answer } = await postAI({
         body: JSON.stringify({ question: question.trim() }),
       });
-      console.log(answer, "dada");
+
       setAnswer(answer);
     } catch (error) {
       console.error("Error in AI request:", error);
@@ -27,18 +24,34 @@ const AIAsistant = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [question]);
 
-  const handleEnter = (event) => {
-    if (event.key === "Enter") {
-      handleAskQuestion();
-    }
-  };
+  const handleEnter = useCallback(
+    (event) => {
+      if (event.key === "Enter") {
+        handleAskQuestion();
+      }
+    },
+    [handleAskQuestion]
+  );
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     setAnswer("");
     setQuestion("");
-  };
+  }, []);
+
+  const clearButton = useMemo(() => {
+    if (!answer.length) return null;
+
+    return (
+      <button
+        onClick={handleClear}
+        className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors"
+      >
+        Clear
+      </button>
+    );
+  }, [answer, handleClear]);
 
   return (
     <section className="bg-white rounded-2xl shadow p-6">
@@ -51,14 +64,7 @@ const AIAsistant = () => {
           onChange={(e) => setQuestion(e.target.value)}
           className="flex-1 px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
         />
-        {answer.length > 0 && (
-          <button
-            onClick={handleClear}
-            className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Clear
-          </button>
-        )}
+        {clearButton}
         <button
           disabled={loading}
           onClick={handleAskQuestion}

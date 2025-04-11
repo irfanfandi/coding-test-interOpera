@@ -1,4 +1,4 @@
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback, useMemo } from "react";
 import SalesDashboard from "../components/SalesDashboard";
 import AIAsistant from "../components/AIAsistant";
 import { getDataSales } from "../services/Api";
@@ -28,6 +28,26 @@ export default function Home() {
     fetchSalesReps();
   }, []);
 
+  const handleSelectUser = useCallback((user) => {
+    setSelectedUser(user);
+  }, []);
+
+  const userList = useMemo(() => {
+    return users.map((user) => (
+      <li
+        className={`cursor-pointer shadow p-2 px-4 rounded-2xl hover:bg-gray-100 ${
+          selectedUser?.id === user.id ? "bg-gray-100" : "bg-white"
+        }`}
+        key={user.id}
+        onClick={() => handleSelectUser(user)}
+      >
+        <span className="text-xl">{user.name}</span>
+        <br />
+        <div className="text-sm">{getFirstWord(user.role)}</div>
+      </li>
+    ));
+  }, [users, selectedUser, handleSelectUser]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -41,24 +61,9 @@ export default function Home() {
       <Suspense fallback={<div>Loading</div>}>
         <AIAsistant />
       </Suspense>
+
       <section>
-        <ul className="flex gap-4 mt-4">
-          {users.map((user) => (
-            <li
-              className={`cursor-pointer shadow p-2 px-4 rounded-2xl hover:bg-gray-100 ${
-                selectedUser?.id == user.id ? "bg-gray-100" : "bg-white"
-              }`}
-              key={user.id}
-              onClick={() => {
-                setSelectedUser(user);
-              }}
-            >
-              <span className="text-xl"> {user.name}</span>
-              <br />
-              <div className="text-sm">{getFirstWord(user.role)}</div>
-            </li>
-          ))}
-        </ul>
+        <ul className="flex gap-4 mt-4">{userList}</ul>
       </section>
 
       <Suspense fallback={<div>Loading</div>}>
